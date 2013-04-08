@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Define complex elements -->
+  <xs:complexType name="integerRange">
+      <xs:attribute name="minValue" type="xs:int"/>
+      <xs:attribute name="minValueUncertainty" type="xs:int"/>
+      <xs:attribute name="maxValue" type="xs:int"/>
+      <xs:attribute name="maxValueUncertainty" type="xs:int"/>
+  </xs:complexType>
+
+  <xs:complexType name="realQuantity">
+    <xs:attribute name="value" type="xs:float"/>
+    <xs:attribute name="uncertainty" type="xs:float"/>
+    <xs:attribute name="confidenceLevel" type="xs:float"/>
+  </xs:complexType>
+  
+  <xs:complexType name="integerQuantity">
+    <xs:attribute name="value" type="xs:int"/>
+    <xs:attribute name="uncertainty" type="xs:int"/>
+    <xs:attribute name="confidenceLevel" type="xs:float"/>
+  </xs:complexType>
+
+  <xs:complexType name="creationInfo">
+      <xs:attribute name="agencyID"
+                    type="xs:string" use="required"/>
+      <xs:attribute name="author"
+                    type="xs:string" use="required"/>
+      <xs:attribute name="version"
+                    type="xs:string" use="required"/>
+      <xs:attribute name="creationTime" type="xs:dateTime"/>
+  </xs:complexType>
+
+  <xs:element name="quakeml">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="eventParameters">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="event">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="origin">
+                      <xs:complexType>
+                        <xs:attribute name="publicID"/>
+                        <xs:element name="latitude"
+                        type="realQuantity"/>
+                        <xs:element name="longitude"
+                        type="realQuantity"/>
+                        <xs:element name="depth"
+                        type="realQuantity"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="effects">
+                      <xs:complexType>
+                        <xs:attribute name="effectsFlag" type="xs:string">
+                          <xs:enumeration value="PossibleTsunami"/>
+                          <xs:enumeration value="PossibleSeiche"/>
+                          <xs:enumeration value="MineCollapse"/>
+                          <xs:enumeration value="MineBlast"/>
+                          <xs:enumeration value="CoalBump"/>
+                          <xs:enumeration value="RockBurst"/>
+                          <xs:enumeration value="Fracking"/>
+                          <xs:enumeration value="SandBlow"/>
+                          <xs:enumeration value="Uplift"/>
+                          <xs:enumeration value="Subsidence"/>
+                          <xs:enumeration value="GroundCracking"/>
+                          <xs:enumeration value="Liquefaction"/>
+                          <!-- How do I add an optional number to "Felt" for distance? -->
+                          <xs:enumeration value="Felt"/> 
+                          <xs:enumeration value="Landslide"/>
+                          <xs:enumeration value="Fire"/>
+                          <xs:enumeration value="VolcanicActivity"/>
+                          <xs:enumeration value="GeyserActivity"/>
+                          <xs:enumeration value="Odors"/>
+                          <xs:enumeration value="Lights"/>
+                          <xs:enumeration value="Sounds"/>
+                          <xs:enumeration value="Comment"/>
+                          <!-- Faulting number length km, number V
+                          Offect m, H Offset m (??) -->
+                        </xs:attribute>
+                        <xs:attribute name="comment" type="xs:string"/>
+                        <xs:attribute name="location" type="xs:string"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="loss">
+                      <xs:complexType>
+                        <xs:element name="quantity" type="integerQuantity"/>
+                        <xs:attribute name="cause">
+                          <xs:enumeration value="BuildingsDamaged"/>
+                          <xs:enumeration value="BuildingsDestroyed"/>
+                          <xs:enumeration value="BuildingsDamagedOrDestroyed"/>
+                          <xs:enumeration value="BuildingsCollapsed"/>
+                          <xs:enumeration value="Electricity"/>
+                          <xs:enumeration value="Water"/>
+                          <xs:enumeration value="Telecommunications"/>
+                          <xs:enumeration value="Roads"/>
+                          <xs:enumeration value="Bridges"/>
+                          <xs:enumeration value="Railroads"/>
+                          <xs:enumeration value="Livestock"/>
+                          <xs:enumeration value="DollarLoss"/>
+                          <xs:enumeration value="DisplacedPersons"/> 
+                          <xs:enumeration value="Missing"/>
+                          <xs:enumeration value="Injured"/>
+                          <xs:enumeration value="TotalDeaths"/>
+                          <xs:enumeration value="ShakingDeaths"/>
+                          <xs:enumeration value="TsunamiDeaths"/>
+                          <xs:enumeration value="FireDeaths"/>
+                          <xs:enumeration value="LandslideDeaths"/>
+                        </xs:attribute>
+                        <xs:element name="quantityRange" type="integerRange"/>
+                        <xs:attribute name="quantityText"
+                        type="xs:string"/>
+                        <xs:attribute name="quantityUnits"
+                        type="xs:string"/>
+                        <xs:element name="creationInfo"
+                        type="creationInfo"/>
+                        <xs:attribute name="comment" type="xs:string"/>
+                        <xs:attribute name="isInDefaultComment"
+                        type="xs:boolean"/>
+                        <xs:attribute name="location" type="xs:string"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="attachments">
+                      <xs:complexType>
+                        <xs:attribute name="URI"
+                        type="xs:string" use="required"/>
+                        <xs:attribute name="comment" type="xs:string"
+                        use="required"/>
+                        <xs:element ref="creationInfo"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="publicID" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
