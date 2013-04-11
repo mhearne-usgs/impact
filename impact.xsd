@@ -4,6 +4,8 @@
            xmlns="urn:Test.Namespace">
   
   <!-- Define complex elements -->
+
+  <!-- Define a range of integers (i.e., 0-100) -->
   <xs:complexType name="integerRange">
     <xs:attribute name="minValue" type="xs:int"/>
     <xs:attribute name="minValueUncertainty" type="xs:int"/>
@@ -11,18 +13,42 @@
       <xs:attribute name="maxValueUncertainty" type="xs:int"/>
   </xs:complexType>
   
+  <!-- Define a floating point number (3.14) -->
   <xs:complexType name="realQuantity">
     <xs:attribute name="value" type="xs:float"/>
     <xs:attribute name="uncertainty" type="xs:float"/>
     <xs:attribute name="confidenceLevel" type="xs:float"/>
+    <xs:attribute name="quantityFlag">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="lessThan"/>
+          <xs:enumeration value="moreThan"/>
+          <xs:enumeration value="exact"/>
+          <xs:enumeration value="approximate"/>
+          <xs:enumeration value="unconfirmed"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
   
+  <!-- Define an integer number (3) -->
   <xs:complexType name="integerQuantity">
     <xs:attribute name="value" type="xs:int"/>
     <xs:attribute name="uncertainty" type="xs:int"/>
     <xs:attribute name="confidenceLevel" type="xs:float"/>
+    <xs:attribute name="quantityFlag">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="lessThan"/>
+          <xs:enumeration value="moreThan"/>
+          <xs:enumeration value="exact"/>
+          <xs:enumeration value="approximate"/>
+          <xs:enumeration value="unconfirmed"/>
+        </xs:restriction>
+      </xs:simpleType>
   </xs:complexType>
   
+  <!-- We're going to use this creationInfo a couple of times, so define it once -->
   <xs:complexType name="creationInfo">
     <xs:attribute name="agencyID"
                   type="xs:string" use="required"/>
@@ -33,6 +59,7 @@
     <xs:attribute name="creationTime" type="xs:dateTime"/>
   </xs:complexType>
   
+  <!-- Start the definition of our quakeml extension -->
   <xs:element name="quakeml">
     <xs:complexType>
       <xs:sequence>
@@ -42,10 +69,11 @@
               <xs:element name="event">
                 <xs:complexType>
                   <xs:sequence>
+
+                    <!-- Origin Element -->
+                    <!-- There should be one and only one of these -->
                     <xs:element name="origin">
                       <xs:complexType>
-                        <!-- The attribute has to go after the elements.  Why? -->
-                        <!-- <xs:attribute name="publicID"/> -->
                         <xs:sequence>
                           <xs:element name="latitude" type="realQuantity"/>
                           <xs:element name="longitude" type="realQuantity"/>
@@ -54,38 +82,36 @@
                         <xs:attribute name="publicID"/>
                       </xs:complexType>
                     </xs:element>
-
-                    <xs:element name="causes">
+                    <!-- End of Origin Element -->
+                    
+                    <!-- eventDescription Element -->
+                    <!-- There can be at most one of these -->
+                    <xs:element name="eventDescription">
                       <xs:complexType>
-                        <xs:attribute name="comment" type="xs:string"/>
-                        <xs:attribute name="location" type="xs:string"/>
-                        <xs:attribute name="causesFlag">
-                          <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                              <xs:enumeration value="MineCollapse"/>
-                              <xs:enumeration value="MineBlast"/>
-                              <xs:enumeration value="CoalBump"/>
-                              <xs:enumeration value="RockBurst"/>
-                              <xs:enumeration value="Fracking"/>
-                              <xs:enumeration value="Comment"/>
-                            </xs:restriction>
-                          </xs:simpleType>
-                          <!-- Faulting number length km, number V
-                               Offect m, H Offset m (??) -->
-                        </xs:attribute>
+                        <xs:sequence>
+                          <xs:element name="comment" type="xs:string"/>
+                          <xs:element name="source" type="xs:string"/>
+                        </xs:sequence>
                       </xs:complexType>
                     </xs:element>
+                    <!-- End of eventDescription Element -->
                     
-                    <xs:element name="effects">
+                    <!-- Effect Element -->
+                    <!-- There can be none to many of these -->
+                    <!-- These are all boolean (happened or did not happen) -->
+                    <!-- effects. -->
+                    <xs:element name="effect">
                       <xs:complexType>
-                        <xs:attribute name="comment" type="xs:string"/>
-                        <xs:attribute name="location" type="xs:string"/>
-                        <xs:attribute name="effectsFlag">
+                        <xs:sequence>
+                          <xs:element name="comment" type="xs:string"/>
+                          <xs:element name="source" type="xs:string"/>
+                          <xs:element name="location" type="xs:string"/>
+                        </xs:sequence>
+                        <xs:attribute name="effectFlag">
                           <xs:simpleType>
                             <xs:restriction base="xs:string">
                               <xs:enumeration value="Tsunami"/>
                               <xs:enumeration value="Seiche"/>
-                              <xs:enumeration value="MineCollapse"/>
                               <xs:enumeration value="SandBlow"/>
                               <xs:enumeration value="Uplift"/>
                               <xs:enumeration value="Subsidence"/>
@@ -95,6 +121,8 @@
                               <xs:enumeration value="Felt"/> 
                               <xs:enumeration value="Landslide"/>
                               <xs:enumeration value="Fire"/>
+                              <xs:enumeration value="Explosion"/>
+                              <xs:enumeration value="MineCollapse"/>
                               <xs:enumeration value="VolcanicActivity"/>
                               <xs:enumeration value="GeyserActivity"/>
                               <xs:enumeration value="Sounds"/>
@@ -106,6 +134,11 @@
                         </xs:attribute>
                       </xs:complexType>
                     </xs:element>
+                    <!-- End of Effect Element -->
+
+                    <!-- Loss Element -->
+                    <!-- There can be none to many of these -->
+                    <!-- These are impacts that cause economic, human, or animal loss -->
                     <xs:element name="loss">
                       <xs:complexType>
                         <xs:sequence>
@@ -135,25 +168,33 @@
                               <xs:enumeration value="ShakingDeaths"/>
                               <xs:enumeration value="TsunamiDeaths"/>
                               <xs:enumeration value="FireDeaths"/>
+                              <xs:enumeration value="UndifferentiatedDeaths"/>
                               <xs:enumeration value="LandslideDeaths"/>
+                              <xs:enumeration value="Other"/>
                             </xs:restriction>
                           </xs:simpleType>
                         </xs:attribute>
                         <xs:attribute name="quantityText" type="xs:string"/>
                         <xs:attribute name="quantityUnits" type="xs:string"/>
                         <xs:attribute name="comment" type="xs:string"/>
+                        <xs:attribute name="source" type="xs:string"/>
                         <xs:attribute name="isInDefaultComment" type="xs:boolean"/>
                         <xs:attribute name="location" type="xs:string"/>
                       </xs:complexType>
                     </xs:element>
-                    <xs:element name="attachments">
+                    <!-- End of Loss Element -->
+                    
+                    <!-- Attachment Element -->
+                    <!-- There can be none to many of these -->
+                    <xs:element name="attachment">
                       <xs:complexType>
-                        <!-- <xs:element name="creationInfo" ref="creationInfo"/> -->
+                        <xs:element name="creationInfo" ref="creationInfo"/>
                         <xs:attribute name="URI" type="xs:string" use="required"/>
                         <xs:attribute name="comment" type="xs:string" use="required"/>
                       </xs:complexType>
                     </xs:element>
-                    <!-- <xs:attribute name="publicID" type="xs:string" use="required"/> -->
+                    <!-- End of Attachment Element -->
+
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
