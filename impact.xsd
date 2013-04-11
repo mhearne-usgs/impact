@@ -90,13 +90,31 @@
                     <xs:element name="eventDescription">
                       <xs:complexType>
                         <xs:sequence>
+                          <!-- Optionally provide a description summarizing all of the impacts -->
                           <xs:element name="comment" type="xs:string"/>
+                          <!-- Where did this description come from? -->
                           <xs:element name="source" type="xs:string"/>
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
                     <!-- End of eventDescription Element -->
                     
+                    <!-- Attachment Element -->
+                    <!-- An attachment is an optional element that can be an image or a PDF -->
+                    <!-- or some other data file that the creator wants to include with the product -->
+                    <!-- There can be none to many of these -->
+                    <xs:element name="attachment">
+                      <xs:complexType>
+                        <!-- When and by whom was this attachment created? -->
+                        <xs:element name="creationInfo" ref="creationInfo"/>
+                        <!-- What is the Universal Resource Identified for this attachment? -->
+                        <xs:attribute name="URI" type="xs:string" use="required"/>
+                        <!-- What is the description of this attachment? -->
+                        <xs:attribute name="comment" type="xs:string" use="required"/>
+                      </xs:complexType>
+                    </xs:element>
+                    <!-- End of Attachment Element -->
+
                     <!-- Effect Element -->
                     <!-- There can be none to many of these -->
                     <!-- These are all boolean (happened or did not happen) -->
@@ -104,10 +122,14 @@
                     <xs:element name="effect">
                       <xs:complexType>
                         <xs:sequence>
+                          <!-- Provide some context (snippet from news article, etc.) -->
                           <xs:element name="comment" type="xs:string"/>
+                          <!-- Where did this information come from? -->
                           <xs:element name="source" type="xs:string"/>
+                          <!-- Where was this effect observed (place name) -->
                           <xs:element name="location" type="xs:string"/>
                         </xs:sequence>
+                        <!-- What is the effect that was observed? -->
                         <xs:attribute name="effectFlag">
                           <xs:simpleType>
                             <xs:restriction base="xs:string">
@@ -143,10 +165,24 @@
                     <xs:element name="loss">
                       <xs:complexType>
                         <xs:sequence>
+                          <!-- When and by whom was this element created? -->
                           <xs:element name="creationInfo" type="creationInfo"/>
+                          <!-- If this loss can be counted, how many? -->
                           <xs:element name="quantity" type="integerQuantity"/>
+                          <!-- If this loss is in a range, what is that range? -->
                           <xs:element name="quantityRange" type="integerRange"/>
+                          <!-- If this loss is not specified numerically (some, few, many) -->
+                          <xs:element name="quantityText" type="xs:string"/>
+                          <!-- What are the things that were lost (fatalities, dollars, buildings?) -->
+                          <xs:element name="quantityUnits" type="xs:string"/>
+                          <!-- What context if any can you provide (snippet from news article)? -->
+                          <xs:element name="comment" type="xs:string"/>
+                          <!-- Where did this information come from? -->
+                          <xs:element name="source" type="xs:string"/>
+                          <!-- Where was this loss observed (place name)? -->
+                          <xs:element name="location" type="xs:string"/>
                         </xs:sequence>
+                        <!-- What are the things that were lost, damaged, missing, etc.? -->
                         <xs:attribute name="cause">
                           <xs:simpleType>
                             <xs:restriction base="xs:string">
@@ -175,26 +211,12 @@
                             </xs:restriction>
                           </xs:simpleType>
                         </xs:attribute>
-                        <xs:attribute name="quantityText" type="xs:string"/>
-                        <xs:attribute name="quantityUnits" type="xs:string"/>
-                        <xs:attribute name="comment" type="xs:string"/>
-                        <xs:attribute name="source" type="xs:string"/>
+                        <!-- Does the creator of the product think that this loss should -->
+                        <!-- be displayed in an algorithmically generated comment? -->
                         <xs:attribute name="isInDefaultComment" type="xs:boolean"/>
-                        <xs:attribute name="location" type="xs:string"/>
                       </xs:complexType>
                     </xs:element>
                     <!-- End of Loss Element -->
-                    
-                    <!-- Attachment Element -->
-                    <!-- There can be none to many of these -->
-                    <xs:element name="attachment">
-                      <xs:complexType>
-                        <xs:element name="creationInfo" ref="creationInfo"/>
-                        <xs:attribute name="URI" type="xs:string" use="required"/>
-                        <xs:attribute name="comment" type="xs:string" use="required"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of Attachment Element -->
 
                   </xs:sequence>
                 </xs:complexType>
