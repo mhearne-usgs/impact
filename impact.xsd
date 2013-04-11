@@ -46,6 +46,7 @@
           <xs:enumeration value="unconfirmed"/>
         </xs:restriction>
       </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
   
   <!-- We're going to use this creationInfo a couple of times, so define it once -->
