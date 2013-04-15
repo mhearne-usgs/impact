@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-           targetNamespace="urn:Test.Namespace" 
-           xmlns="urn:Test.Namespace">
+           targetNamespace="http://anss.org/xmlns/impact/0.1" 
+           xmlns="http://anss.org/xmlns/impact/0.1">
   
   <!-- Define complex elements -->
 
@@ -71,6 +71,11 @@
                 <xs:complexType>
                   <xs:sequence>
 
+                    <!-- impactid Element -->
+                    <!-- There can be many of these, one for each different catalog source (PDE, UTSU, NOAA-HTD, etc.)  -->
+                    <!-- These impact id elements should take the form: quakeml:us.anss.org/impact/version/source -->
+                    <xs:element name="impactid" type="xs:string"/>
+                    
                     <!-- Origin Element -->
                     <!-- There should be one and only one of these -->
                     <xs:element name="origin">
@@ -95,6 +100,8 @@
                           <!-- Where did this description come from? -->
                           <xs:element name="source" type="xs:string"/>
                         </xs:sequence>
+                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
+                        <xs:attribute name="publicID" type="xs:string"/>
                       </xs:complexType>
                     </xs:element>
                     <!-- End of eventDescription Element -->
@@ -155,6 +162,8 @@
                           <!-- Faulting number length km, number V
                                Offect m, H Offset m (??) -->
                         </xs:attribute>
+                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
+                        <xs:attribute name="publicID" type="xs:string"/>
                       </xs:complexType>
                     </xs:element>
                     <!-- End of Effect Element -->
@@ -214,9 +223,39 @@
                         <!-- Does the creator of the product think that this loss should -->
                         <!-- be displayed in an algorithmically generated comment? -->
                         <xs:attribute name="isInDefaultComment" type="xs:boolean"/>
+                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
+                        <xs:attribute name="publicID" type="xs:string"/>
                       </xs:complexType>
                     </xs:element>
                     <!-- End of Loss Element -->
+                    
+                    <!-- Preferred Loss Element -->
+                    <!-- This element allows the user to define which loss type (i.e., totalDeaths) -->
+                    <!-- from a particular source should be preferred
+                    over the same loss type from a different source-->
+                    <xs:element name="preferredLoss">
+                      <xs:complexType>
+                        <!-- The name attribute should be one of the -->
+                        <!-- enumerated losses above -->
+                        <xs:attribute name="name"/>
+                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
+                        <xs:attribute name="publicID"/>
+                      </xs:complexType>
+                    </xs:element>
+                    
+                    <!-- Preferred Effect Element -->
+                    <!-- This element allows the user to define which effect type (i.e., landslide) -->
+                    <!-- from a particular source should be preferred
+                    over the same effect type from a different source -->
+                    <xs:element name="preferredEffect">
+                      <xs:complexType>
+                        <!-- The name attribute should be one of the -->
+                        <!-- enumerated effects above -->
+                        <xs:attribute name="name"/>
+                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
+                        <xs:attribute name="publicID"/>
+                      </xs:complexType>
+                    </xs:element>
 
                   </xs:sequence>
                 </xs:complexType>
