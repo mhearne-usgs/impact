@@ -1,269 +1,141 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-           targetNamespace="http://anss.org/xmlns/impact/0.1" 
-           xmlns="http://anss.org/xmlns/impact/0.1">
-  
-  <!-- Define complex elements -->
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://anss.org/xmlns/impact/0.1"
+           xmlns="http://anss.org/xmlns/impact/0.1"
+           xmlns:impact="http://anss.org/xmlns/impact/0.1"
+           xmlns:bed="http://quakeml.org/xmlns/bed/1.2"
+           elementFormDefault="qualified" 
+           attributeFormDefault="qualified">
 
-  <!-- Define a range of integers (i.e., 0-100) -->
-  <xs:complexType name="integerRange">
-    <xs:attribute name="minValue" type="xs:int"/>
-    <xs:attribute name="minValueUncertainty" type="xs:int"/>
-      <xs:attribute name="maxValue" type="xs:int"/>
-      <xs:attribute name="maxValueUncertainty" type="xs:int"/>
+  <xs:import namespace="http://quakeml.org/xmlns/bed/1.2" schemaLocation="QuakeML-BED-1.2.xsd"/>
+
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+      ANSS Impact metadata for use with quakeml 1.2.
+    </xs:documentation>
+  </xs:annotation>
+
+
+  <xs:simpleType name="QuantityFlag">
+    <xs:annotation>
+      <xs:documentation>
+        Describe the accuracy of a value.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+        <xs:enumeration value="less than"/>
+        <xs:enumeration value="more than"/>
+        <xs:enumeration value="exact"/>
+        <xs:enumeration value="approximate"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="EffectType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="tsunami"/>
+      <xs:enumeration value="seiche"/>
+      <xs:enumeration value="sand blow"/>
+      <xs:enumeration value="uplift"/>
+      <xs:enumeration value="subsidence"/>
+      <xs:enumeration value="ground cracking"/>
+      <xs:enumeration value="liquefaction"/>
+      <xs:enumeration value="felt"/> 
+      <xs:enumeration value="landslide"/>
+      <xs:enumeration value="fire"/>
+      <xs:enumeration value="explosion"/>
+      <xs:enumeration value="mine collapse"/>
+      <xs:enumeration value="volcanic activity"/>
+      <xs:enumeration value="geyser activity"/>
+      <xs:enumeration value="sounds"/>
+      <xs:enumeration value="other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="LossType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="buildings damaged"/>
+      <xs:enumeration value="buildings destroyed"/>
+      <xs:enumeration value="buildings damaged or destroyed"/>
+      <xs:enumeration value="buildings collapsed"/>
+      <xs:enumeration value="electricity"/>
+      <xs:enumeration value="water"/>
+      <xs:enumeration value="telecommunications"/>
+      <xs:enumeration value="roads"/>
+      <xs:enumeration value="bridges"/>
+      <xs:enumeration value="railroads"/>
+      <xs:enumeration value="livestock"/>
+      <xs:enumeration value="dollar loss"/>
+      <xs:enumeration value="displaced persons"/> 
+      <xs:enumeration value="missing"/>
+      <xs:enumeration value="injured"/>
+      <xs:enumeration value="total deaths"/>
+      <xs:enumeration value="shaking deaths"/>
+      <xs:enumeration value="tsunami deaths"/>
+      <xs:enumeration value="fire deaths"/>
+      <xs:enumeration value="undifferentiated deaths"/>
+      <xs:enumeration value="landslide deaths"/>
+      <xs:enumeration value="other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="IntegerRange">
+    <xs:sequence>
+      <xs:element name="minimum" minOccurs="0" maxOccurs="1" type="bed:IntegerQuantity"/>
+      <xs:element name="maximum" minOccurs="0" maxOccurs="1" type="bed:IntegerQuantity"/>
+    </xs:sequence>
   </xs:complexType>
-  
-  <!-- Define a floating point number (3.14) -->
-  <xs:complexType name="realQuantity">
-    <xs:attribute name="value" type="xs:float"/>
-    <xs:attribute name="uncertainty" type="xs:float"/>
-    <xs:attribute name="confidenceLevel" type="xs:float"/>
-    <xs:attribute name="quantityFlag">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="lessThan"/>
-          <xs:enumeration value="moreThan"/>
-          <xs:enumeration value="exact"/>
-          <xs:enumeration value="approximate"/>
-          <xs:enumeration value="unconfirmed"/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+
+  <xs:complexType name="Effect">
+    <xs:sequence>
+      <xs:element name="type" type="impact:EffectType"/>
+      <xs:element name="location" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="eventID" type="bed:ResourceReference" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="comment" type="bed:Comment" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="creationInfo" type="bed:CreationInfo" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="publicID" use="required" type="bed:ResourceReference"/>
+    <xs:attribute name="confirmed" type="xs:boolean" default="false"/>
   </xs:complexType>
-  
-  <!-- Define an integer number (3) -->
-  <xs:complexType name="integerQuantity">
-    <xs:attribute name="value" type="xs:int"/>
-    <xs:attribute name="uncertainty" type="xs:int"/>
-    <xs:attribute name="confidenceLevel" type="xs:float"/>
-    <xs:attribute name="quantityFlag">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="lessThan"/>
-          <xs:enumeration value="moreThan"/>
-          <xs:enumeration value="exact"/>
-          <xs:enumeration value="approximate"/>
-          <xs:enumeration value="unconfirmed"/>
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+
+  <xs:complexType name="Loss">
+    <xs:sequence>
+      <xs:element name="type" type="impact:LossType"/>
+      <xs:element name="quantity" type="bed:IntegerQuantity"/>
+      <xs:element name="range" type="impact:IntegerRange"/>
+      <xs:element name="comment" type="bed:Comment" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="creationInfo" type="bed:CreationInfo" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="publicID" use="required" type="bed:ResourceReference"/>
+    <xs:attribute name="flag" type="impact:quantityFlag" default="approximate"/>
+    <xs:attribute name="confirmed" type="xs:boolean" default="false"/>
   </xs:complexType>
-  
-  <!-- We're going to use this creationInfo a couple of times, so define it once -->
-  <xs:complexType name="creationInfo">
-    <xs:attribute name="agencyID"
-                  type="xs:string" use="required"/>
-    <xs:attribute name="author"
-                    type="xs:string" use="required"/>
-    <xs:attribute name="version"
-                  type="xs:string" use="required"/>
-    <xs:attribute name="creationTime" type="xs:dateTime"/>
+
+  <xs:simpleType name="PreferredEffect">
+    <xs:restriction base="bed:ResourceIdentifier">
+        <xs:attribute name="type" type="impact:EffectType"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PreferredLoss">
+    <xs:restriction base="bed:ResourceIdentifier">
+        <xs:attribute name="type" type="impact:LossType"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="Impacts">
+    <xs:sequence>
+      <xs:element name="effect" type="impact:Effect" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="loss" type="impact:Loss" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="preferredEffectID" type="impact:PreferredEffect" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="preferredLossID" type="impact:PreferredLoss" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
   </xs:complexType>
-  
-  <!-- Start the definition of our quakeml extension -->
-  <xs:element name="quakeml">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="eventParameters">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element name="event">
-                <xs:complexType>
-                  <xs:sequence>
 
-                    <!-- impactid Element -->
-                    <!-- There can be many of these, one for each different catalog source (PDE, UTSU, NOAA-HTD, etc.)  -->
-                    <!-- These impact id elements should take the form: quakeml:us.anss.org/impact/version/source -->
-                    <xs:element name="impactid" type="xs:string"/>
-                    
-                    <!-- Origin Element -->
-                    <!-- There should be one and only one of these -->
-                    <xs:element name="origin">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="latitude" type="realQuantity"/>
-                          <xs:element name="longitude" type="realQuantity"/>
-                          <xs:element name="depth" type="realQuantity"/>
-                        </xs:sequence>
-                        <xs:attribute name="publicID"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of Origin Element -->
-                    
-                    <!-- eventDescription Element -->
-                    <!-- There can be at most one of these -->
-                    <xs:element name="eventDescription">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <!-- Optionally provide a description summarizing all of the impacts -->
-                          <xs:element name="comment" type="xs:string"/>
-                          <!-- Where did this description come from? -->
-                          <xs:element name="source" type="xs:string"/>
-                        </xs:sequence>
-                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
-                        <xs:attribute name="publicID" type="xs:string"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of eventDescription Element -->
-                    
-                    <!-- Attachment Element -->
-                    <!-- An attachment is an optional element that can be an image or a PDF -->
-                    <!-- or some other data file that the creator wants to include with the product -->
-                    <!-- There can be none to many of these -->
-                    <xs:element name="attachment">
-                      <xs:complexType>
-                        <!-- When and by whom was this attachment created? -->
-                        <xs:element name="creationInfo" ref="creationInfo"/>
-                        <!-- What is the Universal Resource Identified for this attachment? -->
-                        <xs:attribute name="URI" type="xs:string" use="required"/>
-                        <!-- What is the description of this attachment? -->
-                        <xs:attribute name="comment" type="xs:string" use="required"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of Attachment Element -->
 
-                    <!-- Effect Element -->
-                    <!-- There can be none to many of these -->
-                    <!-- These are all boolean (happened or did not happen) -->
-                    <!-- effects. -->
-                    <xs:element name="effect">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <!-- Provide some context (snippet from news article, etc.) -->
-                          <xs:element name="comment" type="xs:string"/>
-                          <!-- Where did this information come from? -->
-                          <xs:element name="source" type="xs:string"/>
-                          <!-- Where was this effect observed (place name) -->
-                          <xs:element name="location" type="xs:string"/>
-                        </xs:sequence>
-                        <!-- What is the effect that was observed? -->
-                        <xs:attribute name="effectFlag">
-                          <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                              <xs:enumeration value="Tsunami"/>
-                              <xs:enumeration value="Seiche"/>
-                              <xs:enumeration value="SandBlow"/>
-                              <xs:enumeration value="Uplift"/>
-                              <xs:enumeration value="Subsidence"/>
-                              <xs:enumeration value="GroundCracking"/>
-                              <xs:enumeration value="Liquefaction"/>
-                              <!-- How do I add an optional number to "Felt" for distance? -->
-                              <xs:enumeration value="Felt"/> 
-                              <xs:enumeration value="Landslide"/>
-                              <xs:enumeration value="Fire"/>
-                              <xs:enumeration value="Explosion"/>
-                              <xs:enumeration value="MineCollapse"/>
-                              <xs:enumeration value="VolcanicActivity"/>
-                              <xs:enumeration value="GeyserActivity"/>
-                              <xs:enumeration value="Sounds"/>
-                              <xs:enumeration value="Other"/>
-                            </xs:restriction>
-                          </xs:simpleType>
-                          <!-- Faulting number length km, number V
-                               Offect m, H Offset m (??) -->
-                        </xs:attribute>
-                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
-                        <xs:attribute name="publicID" type="xs:string"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of Effect Element -->
-
-                    <!-- Loss Element -->
-                    <!-- There can be none to many of these -->
-                    <!-- These are impacts that cause economic, human, or animal loss -->
-                    <xs:element name="loss">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <!-- When and by whom was this element created? -->
-                          <xs:element name="creationInfo" type="creationInfo"/>
-                          <!-- If this loss can be counted, how many? -->
-                          <xs:element name="quantity" type="integerQuantity"/>
-                          <!-- If this loss is in a range, what is that range? -->
-                          <xs:element name="quantityRange" type="integerRange"/>
-                          <!-- If this loss is not specified numerically (some, few, many) -->
-                          <xs:element name="quantityText" type="xs:string"/>
-                          <!-- What are the things that were lost (fatalities, dollars, buildings?) -->
-                          <xs:element name="quantityUnits" type="xs:string"/>
-                          <!-- What context if any can you provide (snippet from news article)? -->
-                          <xs:element name="comment" type="xs:string"/>
-                          <!-- Where did this information come from? -->
-                          <xs:element name="source" type="xs:string"/>
-                          <!-- Where was this loss observed (place name)? -->
-                          <xs:element name="location" type="xs:string"/>
-                        </xs:sequence>
-                        <!-- What are the things that were lost, damaged, missing, etc.? -->
-                        <xs:attribute name="cause">
-                          <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                              <xs:enumeration value="BuildingsDamaged"/>
-                              <xs:enumeration value="BuildingsDestroyed"/>
-                              <xs:enumeration value="BuildingsDamagedOrDestroyed"/>
-                              <xs:enumeration value="BuildingsCollapsed"/>
-                              <xs:enumeration value="Electricity"/>
-                              <xs:enumeration value="Water"/>
-                              <xs:enumeration value="Telecommunications"/>
-                              <xs:enumeration value="Roads"/>
-                              <xs:enumeration value="Bridges"/>
-                              <xs:enumeration value="Railroads"/>
-                              <xs:enumeration value="Livestock"/>
-                              <xs:enumeration value="DollarLoss"/>
-                              <xs:enumeration value="DisplacedPersons"/> 
-                              <xs:enumeration value="Missing"/>
-                              <xs:enumeration value="Injured"/>
-                              <xs:enumeration value="TotalDeaths"/>
-                              <xs:enumeration value="ShakingDeaths"/>
-                              <xs:enumeration value="TsunamiDeaths"/>
-                              <xs:enumeration value="FireDeaths"/>
-                              <xs:enumeration value="UndifferentiatedDeaths"/>
-                              <xs:enumeration value="LandslideDeaths"/>
-                              <xs:enumeration value="Other"/>
-                            </xs:restriction>
-                          </xs:simpleType>
-                        </xs:attribute>
-                        <!-- Does the creator of the product think that this loss should -->
-                        <!-- be displayed in an algorithmically generated comment? -->
-                        <xs:attribute name="isInDefaultComment" type="xs:boolean"/>
-                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
-                        <xs:attribute name="publicID" type="xs:string"/>
-                      </xs:complexType>
-                    </xs:element>
-                    <!-- End of Loss Element -->
-                    
-                    <!-- Preferred Loss Element -->
-                    <!-- This element allows the user to define which loss type (i.e., totalDeaths) -->
-                    <!-- from a particular source should be preferred
-                    over the same loss type from a different source-->
-                    <xs:element name="preferredLoss">
-                      <xs:complexType>
-                        <!-- The name attribute should be one of the -->
-                        <!-- enumerated losses above -->
-                        <xs:attribute name="name"/>
-                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
-                        <xs:attribute name="publicID"/>
-                      </xs:complexType>
-                    </xs:element>
-                    
-                    <!-- Preferred Effect Element -->
-                    <!-- This element allows the user to define which effect type (i.e., landslide) -->
-                    <!-- from a particular source should be preferred
-                    over the same effect type from a different source -->
-                    <xs:element name="preferredEffect">
-                      <xs:complexType>
-                        <!-- The name attribute should be one of the -->
-                        <!-- enumerated effects above -->
-                        <xs:attribute name="name"/>
-                        <!-- This publicID attribute should point to one of the impactid elements defined above -->
-                        <xs:attribute name="publicID"/>
-                      </xs:complexType>
-                    </xs:element>
-
-                  </xs:sequence>
-                </xs:complexType>
-              </xs:element>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  <!-- entry point into schema -->
+  <xs:element name="impacts" type="impact:impacts"/>
 </xs:schema>
