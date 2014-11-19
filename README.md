@@ -32,7 +32,7 @@ To update:
 
 pip install -U git+git://github.com/mhearne-usgs/impact.git
 
-Application Programming Interface (API) Usage
+Libary Usage
 ----------------------------------------------------- 
 
 The library code will be installed in
