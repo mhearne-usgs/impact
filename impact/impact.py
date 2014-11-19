@@ -28,6 +28,13 @@ MISSING = 'missing'
 SHAKING = 'shaking'
 TSUNAMI = 'tsunami'
 
+#effects
+EFFECTS = ["tsunami","seiche","mine collapse","coal bump","rockburst","shaking",
+           "sandblows","uplift","subsidence","ground cracking","liquefaction",
+           "felt","landslide","fire","volcanic activity","geyser activity",
+           "odors","lights","heard","faulting","damage","casualties","shaking"]
+
+
 LOSSES = {'shakingDeaths':{'type':PEOPLE,'cause':SHAKING,'extent':KILLED},
           'tsunamiDeaths':{'type':PEOPLE,'cause':TSUNAMI,'extent':KILLED},
           'totalDeaths':{'type':PEOPLE,'extent':KILLED},
@@ -53,9 +60,7 @@ ESTIMATE = "estimate"
 EXACT = "exact"
 RANGE = "range"
 
-
-
-class ImpactTag(object):
+class ImpactObject(object):
     def __init__(self,eventdict):
         self.quaketag = self.createEventTag(eventdict)
 
@@ -85,18 +90,41 @@ class ImpactTag(object):
                 eventtag.addChild(preftag)
             eventtag.addChild(losstag)
 
+        for effect in event['effects']:
+            effecttag,preftag = self.createEffectTag(effect)
+            if preftag:
+                eventtag.addChild(preftag)
+            eventtag.addChild(effecttag)
+
         paramtag.addChild(eventtag)
         quaketag.addChild(paramtag)
 
         return quaketag
 
+    def renderToString(self,pretty=True):
+        xmltext = self.quaketag.renderTag(0)
+        xmltext = xmltext.replace('\n','')
+        xmltext = xmltext.replace('\t','')
+        if pretty:
+            root = xml.dom.minidom.parseString(xmltext)
+            pretty_xml_as_string = root.toprettyxml(indent="  ")
+            return pretty_xml_as_string
+        else:
+            xmltext
 
+    def renderToFile(self,filename,pretty=True):
+        xmltext = self.renderToString(pretty=pretty)
+        f = open(filename,'wt')
+        f.write(xmltext)
+        f.close()
+    
     def createValueTag(self,value,valuetype):
         subvaluetag = None
         lowertag = None
         uppertag = None
         valuetag = Tag('impact:value')
-        vstr = '%i' % value
+        if not isinstance(value,(list,tuple)):
+            vstr = '%i' % value
         if valuetype == ATLEAST:
             lowertag = Tag('lowerUncertainty',data=vstr)
         if valuetype == NEARLY:
@@ -118,11 +146,28 @@ class ImpactTag(object):
 
         return valuetag
 
-    def createSourceTag(self,source):
+    def createSourceTag(self,source,impacttype):
         authortag = Tag('author',data=source)
         sourcetag = Tag('impact:creationInfo')
         sourcetag.addChild(authortag)
         return sourcetag
+
+    def createEffectTag(self,effect):
+        sourcetag = self.createSourceTag(effect['source'],'effect')
+        commenttag = Tag('impact:comment',data=effect['comment'])
+        typetag = Tag('impact:type',data=effect['effecttype'])
+        effectid = effect['source']+effect['effecttype']
+        preftag = None
+        if effect['preferred']:
+            preftag = Tag('impact:preferredImpactEstimateID',
+                          data='quakeml:expocat.anss.org/impactEstimate/%s' % effectid)
+        effecttag = Tag('impact:effect')
+        effecttag.addChild(typetag)
+        effecttag.addChild(commenttag)
+        effecttag.addChild(sourcetag)
+
+        return (effecttag,preftag)
+        
     
     def createLossTag(self,impact):
         #impact['comment'] = "101 deaths from shaking"
@@ -147,7 +192,7 @@ class ImpactTag(object):
         qualifiertag = Tag('impact:qualifier',data=impact['valuetype'])
 
         valuetag = self.createValueTag(impact['value'],impact['valuetype'])
-        sourcetag = self.createSourceTag(impact['source'])
+        sourcetag = self.createSourceTag(impact['source'],'impact')
         commenttag = Tag('impact:comment',data=impact['comment'])
         losstag = Tag('impact:loss',attributes={'impact:publicID':impactid})
         losstag.addChild(typetag)
@@ -212,12 +257,22 @@ class ImpactTag(object):
         return origintag
 
 if __name__ == '__main__':
-    event = {'id':'us12345678',
+    event = {'id':'12345678',
              'lat':34.1234,
              'lon':-118.1234,
              'depth':10.0,
              'time':datetime.utcnow(),
              'magnitude':6.1,
+             'effects':[
+                 {'preferred':True,
+                  'effecttype':TSUNAMI,
+                  'source':'UTSU',
+                  'comment':'Tsunami swamped the island'},
+                 {'preferred':False,
+                  'effecttype':TSUNAMI,
+                  'source':'NOAA',
+                  'comment':'Small tsunami waves detected'}
+             ],
              'impacts':[
                  {'preferred':True,
                   'source':'pde',
@@ -230,22 +285,22 @@ if __name__ == '__main__':
                   'losstype':'shakingDeaths',
                   'value':100,
                   'valuetype':NEARLY,
-                  'comment':'nearly 100 injuries'},
+                  'comment':'nearly 100 deaths'},
                  {'preferred':True,
                   'source':'pde',
                   'losstype':'injured',
                   'value':1000,
                   'valuetype':ATLEAST,
-                  'comment':'at least 1000 injuries'}]}
-    itag = ImpactTag(event)
-    xmltext = itag.quaketag.renderTag(0)
-    #strip out all newline characters
-    xmltext = xmltext.replace('\n','')
-    xmltext = xmltext.replace('\t','')
-    #print xmlstr
-    root = xml.dom.minidom.parseString(xmltext)
-    pretty_xml_as_string = root.toprettyxml(indent="  ")
-    for line in pretty_xml_as_string.split('\n'):
+                  'comment':'at least 1000 injuries'},
+                  {'preferred':False,
+                   'source':'emdat',
+                   'losstype':'injured',
+                   'value':(1100,1200),
+                   'valuetype':RANGE,
+                   'comment':'Between 1100 and 1200 injured'}]}
+    itag = ImpactObject(event)
+    xmltext = itag.renderToString()
+    for line in xmltext.split('\n'):
         if not len(line.strip()):
             continue
         print line
