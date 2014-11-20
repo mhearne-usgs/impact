@@ -37,6 +37,7 @@ EFFECTS = ["tsunami","seiche","mine collapse","coal bump","rockburst","shaking",
 
 LOSSES = {'shakingDeaths':{'type':PEOPLE,'cause':SHAKING,'extent':KILLED},
           'tsunamiDeaths':{'type':PEOPLE,'cause':TSUNAMI,'extent':KILLED},
+          'tsunamiInjured':{'type':PEOPLE,'cause':TSUNAMI,'extent':INJURED},
           'totalDeaths':{'type':PEOPLE,'extent':KILLED},
           'injured':{'type':PEOPLE,'extent':INJURED},
           'displaced':{'type':PEOPLE,'extent':DISPLACED},
@@ -78,6 +79,10 @@ class ImpactObject(object):
                                            'catalog:eventid':'%s' % event['id'],
                                            'publicID':pubeventid,
                                            'catalog:eventsource':'us'})
+        eventcomment = Tag('comment',attributes={'text':event['comment']})
+        countrycomment = Tag('comment',attributes={'text':event['countrycomment']})
+        eventtag.addChild(eventcomment)
+        eventtag.addChild(countrycomment)
         if event.has_key('magnitude'):
             magtag = self.createMagTag(event)
             eventtag.addChild(magtag)
