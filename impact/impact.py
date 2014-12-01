@@ -7,6 +7,8 @@ import xml.dom.minidom
 #local imports
 from neicio.tag import Tag
 
+#third patrty imports
+import pytz
 
 TIMEFMT = '%Y-%m-%dT%H:%M:%S'
 
@@ -65,6 +67,29 @@ class ImpactObject(object):
     def __init__(self,eventdict):
         self.quaketag = self.createEventTag(eventdict)
 
+    def makePDLPackage(self,folder):
+        #save impact file
+        impactfile = os.path.join(folder,'impact.xml')
+        self.renderToFile(impactfile)
+
+        #save contents file
+        xmlfile = os.path.join(folder,'contents.xml')
+        formattag = tag.Tag('format',attributes={'href':'impact.xml','type':'application/xml'})
+        desc = '<![CDATA[PAGER Impact Data (XML format)]]>'
+        captiontag = tag.Tag('caption',data=desc)
+        filetag = tag.Tag('file',attributes={'title':'NEIC Impact Data','id':'impact'})
+        filetag.addChild(captiontag)
+        filetag.addChild(formattag)
+        contentstag = tag.Tag('contents')
+        contentstag.addChild(filetag)
+        xmlstr = contentstag.renderTag(0)
+        xmlstr = xmlstr.replace('\t','')
+        xmlstr = xmlstr.replace('\n','')
+        f = open(xmlfile,'wt')
+        f.write(xmlstr)
+        f.close()
+        
+        
     def createEventTag(self,event):
         quaketag = Tag('q:quakeml',attributes={'xmlns':'http://quakeml.org/xmlns/bed/1.2',
                                                'xmlns:q':'http://quakeml.org/xmlns/quakeml/1.2',
@@ -80,9 +105,11 @@ class ImpactObject(object):
                                            'publicID':pubeventid,
                                            'catalog:eventsource':'us'})
         eventcomment = Tag('comment',attributes={'text':event['comment']})
-        countrycomment = Tag('comment',attributes={'text':event['countrycomment']})
+        if event.has_key('countrycomment'):
+            countrycomment = Tag('comment',attributes={'text':event['countrycomment']})
+            eventtag.addChild(countrycomment)
         eventtag.addChild(eventcomment)
-        eventtag.addChild(countrycomment)
+        
         if event.has_key('magnitude'):
             magtag = self.createMagTag(event)
             eventtag.addChild(magtag)
@@ -102,6 +129,14 @@ class ImpactObject(object):
             eventtag.addChild(effecttag)
 
         paramtag.addChild(eventtag)
+
+        #creation time
+        tnow = datetime.utcnow()
+        pytz.utc.localize(tnow)
+        timetag = Tag('creationTime',data=tnow.strftime('%Y-%m-%d %H:%M:%S%Z'))
+        createtag = Tag('creationInfo')
+        createtag.addChild(timetag)
+        paramtag.addChild(createtag)
         quaketag.addChild(paramtag)
 
         return quaketag
@@ -181,11 +216,11 @@ class ImpactObject(object):
         #impact['source'] = "Centre for Research on the Epidemiology of Disasters (CRED)"
         #impact['valuetype'] = "exact" (exact,at least,estimated,unconfirmed,range,at most,some)
         #101 shaking deaths 
-        impactid = impact['source']+impact['losstype']
+        impactid = 'quakeml:expocat.anss.org/impactEstimate/%s' % impact['source']+impact['losstype']
         preftag = None
         if impact['preferred']:
             preftag = Tag('impact:preferredImpactEstimateID',
-                          data='quakeml:expocat.anss.org/impactEstimate/%s' % impactid)
+                          data=impactid)
         lossdict = LOSSES[impact['losstype']]
         typetag = Tag('impact:type',data=lossdict['type'])
         causetag = None
@@ -268,6 +303,7 @@ if __name__ == '__main__':
              'depth':10.0,
              'time':datetime.utcnow(),
              'magnitude':6.1,
+             'comment':'Big event - affected a lot of people',
              'effects':[
                  {'preferred':True,
                   'effecttype':TSUNAMI,
