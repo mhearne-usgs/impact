@@ -29,6 +29,7 @@ MISSING = 'missing'
 #causes
 SHAKING = 'shaking'
 TSUNAMI = 'tsunami'
+LANDSLIDE = 'landslide'
 
 #effects
 EFFECTS = ["tsunami","seiche","mine collapse","coal bump","rockburst","shaking",
@@ -41,6 +42,9 @@ LOSSES = {'shakingDeaths':{'type':PEOPLE,'cause':SHAKING,'extent':KILLED},
           'tsunamiDeaths':{'type':PEOPLE,'cause':TSUNAMI,'extent':KILLED},
           'tsunamiInjured':{'type':PEOPLE,'cause':TSUNAMI,'extent':INJURED},
           'totalDeaths':{'type':PEOPLE,'extent':KILLED},
+          'landslideDeaths':{'type':PEOPLE,'extent':KILLED,'cause':LANDSLIDE},
+          'otherDeaths':{'type':PEOPLE,'extent':KILLED},
+          'undiffDeaths':{'type':PEOPLE,'extent':KILLED},
           'injured':{'type':PEOPLE,'extent':INJURED},
           'displaced':{'type':PEOPLE,'extent':DISPLACED},
           'missing':{'type':PEOPLE,'extent':MISSING},
@@ -62,6 +66,12 @@ UNCONFIRMED = "unconfirmed"
 ESTIMATE = "estimate"
 EXACT = "exact"
 RANGE = "range"
+
+def makeCommentTag(ctext):
+    ctag = Tag('comment')
+    ctexttag = Tag('text',data=ctext)
+    ctag.addChild(ctexttag)
+    return ctag
 
 class ImpactObject(object):
     def __init__(self,eventdict):
@@ -99,16 +109,16 @@ class ImpactObject(object):
         pubeventid = 'quakeml:us.anss.org/event/%s/%i' % (event['id'],int(datetime.utcnow().strftime('%s')))
         paramtag = Tag('eventParameters',attributes={'xmlns':'http://quakeml.org/xmlns/bed/1.2',
                                                      'publicID':pubid})
-        eventtag = Tag('event',attributes={'catalog:dataid':'us%s' % event['id'],
+        eventtag = Tag('event',attributes={'catalog:dataid':'%s' % event['id'],
                                            'catalog:datasource':'us',
                                            'catalog:eventid':'%s' % event['id'],
                                            'publicID':pubeventid,
                                            'catalog:eventsource':'us'})
-        eventcomment = Tag('comment',attributes={'text':event['comment']})
-        if event.has_key('countrycomment'):
-            countrycomment = Tag('comment',attributes={'text':event['countrycomment']})
-            eventtag.addChild(countrycomment)
+        eventcomment = makeCommentTag(event['comment'])
         eventtag.addChild(eventcomment)
+        if event.has_key('countrycomment'):
+            countrycomment = makeCommentTag(event['countrycomment'])
+            eventtag.addChild(countrycomment)
         
         if event.has_key('magnitude'):
             magtag = self.createMagTag(event)
@@ -133,7 +143,7 @@ class ImpactObject(object):
         #creation time
         tnow = datetime.utcnow()
         pytz.utc.localize(tnow)
-        timetag = Tag('creationTime',data=tnow.strftime('%Y-%m-%d %H:%M:%S%Z'))
+        timetag = Tag('creationTime',data=tnow.strftime(TIMEFMT))
         createtag = Tag('creationInfo')
         createtag.addChild(timetag)
         paramtag.addChild(createtag)
@@ -196,12 +206,12 @@ class ImpactObject(object):
         sourcetag = self.createSourceTag(effect['source'],'effect')
         commenttag = Tag('impact:comment',data=effect['comment'])
         typetag = Tag('impact:type',data=effect['effecttype'])
-        effectid = effect['source']+effect['effecttype']
+        effectid = 'quakeml:expocat.anss.org/impactEstimate/%s' % effect['source']+effect['effecttype']
         preftag = None
         if effect['preferred']:
             preftag = Tag('impact:preferredImpactEstimateID',
-                          data='quakeml:expocat.anss.org/impactEstimate/%s' % effectid)
-        effecttag = Tag('impact:effect')
+                          data=effectid)
+        effecttag = Tag('impact:effect',attributes={'publicid':effectid})
         effecttag.addChild(typetag)
         effecttag.addChild(commenttag)
         effecttag.addChild(sourcetag)
@@ -226,6 +236,7 @@ class ImpactObject(object):
         causetag = None
         if lossdict.has_key('cause'):
             causetag = Tag('impact:cause',data=lossdict['cause'])
+        
         extenttag = None
         if lossdict.has_key('extent'):
             extenttag = Tag('impact:extent',data=lossdict['extent'])
@@ -238,6 +249,14 @@ class ImpactObject(object):
         losstag.addChild(typetag)
         losstag.addChild(valuetag)
         losstag.addChild(commenttag)
+
+        if impact['losstype'] == 'undiffDeaths':
+            causecommenttag = Tag('impact:comment',data='Undifferentiated fatalities')
+            losstag.addChild(causecommenttag)
+        if impact['losstype'] == 'totalDeaths':
+            causecommenttag = Tag('impact:comment',data='Total fatalities from all causes')
+            losstag.addChild(causecommenttag)
+        
         if extenttag:
             losstag.addChild(extenttag)
         if causetag:
@@ -258,7 +277,7 @@ class ImpactObject(object):
 
     def createOriginTag(self,event):
         eventcode = event['id']
-        origintag = Tag('origin',attributes={'catalog:dataid':'us'+eventcode,
+        origintag = Tag('origin',attributes={'catalog:dataid':eventcode,
                                              'catalog:datasource':'us',
                                              'catalog:eventid':eventcode,
                                              'publicID':'quakeml:us.anss.org/origin/%s' % eventcode})
