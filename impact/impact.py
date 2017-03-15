@@ -35,16 +35,16 @@ LANDSLIDE = 'landslide'
 EFFECTS = ["tsunami","seiche","mine collapse","coal bump","rockburst","shaking",
            "sandblows","uplift","subsidence","ground cracking","liquefaction",
            "felt","landslide","fire","volcanic activity","geyser activity",
-           "odors","lights","heard","faulting","damage","casualties","shaking"]
+           "odors","lights","heard","faulting","damage","casualties","shaking","any","unknown"]
 
 
 LOSSES = {'shakingDeaths':{'type':PEOPLE,'cause':SHAKING,'extent':KILLED},
           'tsunamiDeaths':{'type':PEOPLE,'cause':TSUNAMI,'extent':KILLED},
           'tsunamiInjured':{'type':PEOPLE,'cause':TSUNAMI,'extent':INJURED},
-          'totalDeaths':{'type':PEOPLE,'extent':KILLED},
+          'totalDeaths':{'type':PEOPLE,'extent':KILLED,'cause':'any'},
           'landslideDeaths':{'type':PEOPLE,'extent':KILLED,'cause':LANDSLIDE},
           'otherDeaths':{'type':PEOPLE,'extent':KILLED},
-          'undiffDeaths':{'type':PEOPLE,'extent':KILLED},
+          'undiffDeaths':{'type':PEOPLE,'extent':KILLED,'cause':'unknown'},
           'injured':{'type':PEOPLE,'extent':INJURED},
           'displaced':{'type':PEOPLE,'extent':DISPLACED},
           'missing':{'type':PEOPLE,'extent':MISSING},
@@ -67,11 +67,18 @@ ESTIMATE = "estimate"
 EXACT = "exact"
 RANGE = "range"
 
-def makeCommentTag(ctext):
-    ctag = Tag('comment')
-    ctexttag = Tag('text',data=ctext)
-    ctag.addChild(ctexttag)
-    return ctag
+def wrapText(text):
+    ctext = '<![CDATA['+text+']]>'
+    return ctext
+
+def makeCommentTag(ctextlist):
+    ctags = []
+    for ctext in ctextlist:
+        ctag = Tag('comment')
+        ctexttag = Tag('text',data=wrapText(ctext))
+        ctag.addChild(ctexttag)
+        ctags.append(ctag)
+    return ctags
 
 class ImpactObject(object):
     def __init__(self,eventdict):
@@ -114,8 +121,9 @@ class ImpactObject(object):
                                            'catalog:eventid':'%s' % event['id'],
                                            'publicID':pubeventid,
                                            'catalog:eventsource':'us'})
-        eventcomment = makeCommentTag(event['comment'])
-        eventtag.addChild(eventcomment)
+        eventcomments = makeCommentTag(event['comment'])
+        for eventcomment in eventcomments:
+            eventtag.addChild(eventcomment)
         if event.has_key('countrycomment'):
             countrycomment = makeCommentTag(event['countrycomment'])
             eventtag.addChild(countrycomment)
@@ -250,12 +258,12 @@ class ImpactObject(object):
         losstag.addChild(valuetag)
         losstag.addChild(commenttag)
 
-        if impact['losstype'] == 'undiffDeaths':
-            causecommenttag = Tag('impact:comment',data='Undifferentiated fatalities')
-            losstag.addChild(causecommenttag)
-        if impact['losstype'] == 'totalDeaths':
-            causecommenttag = Tag('impact:comment',data='Total fatalities from all causes')
-            losstag.addChild(causecommenttag)
+        # if impact['losstype'] == 'undiffDeaths':
+        #     causecommenttag = Tag('impact:comment',data='Undifferentiated fatalities')
+        #     losstag.addChild(causecommenttag)
+        # if impact['losstype'] == 'totalDeaths':
+        #     causecommenttag = Tag('impact:comment',data='Total fatalities from all causes')
+        #     losstag.addChild(causecommenttag)
         
         if extenttag:
             losstag.addChild(extenttag)
